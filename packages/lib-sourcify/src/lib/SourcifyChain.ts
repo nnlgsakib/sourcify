@@ -7,8 +7,10 @@ import {
   getAddress,
 } from 'ethers';
 import {
+  ApiKeyRPC,
   Chain,
   FetchContractCreationTxMethods,
+  FetchRequestRPC,
   SourcifyChainExtension,
 } from './types';
 import { logDebug, logError, logInfo, logWarn } from './logger';
@@ -27,6 +29,7 @@ interface JsonRpcProviderWithUrl extends JsonRpcProvider {
 export type SourcifyChainInstance = Omit<Chain, 'rpc'> &
   Omit<SourcifyChainExtension, 'rpc' | 'sourcifyName'> & {
     rpc: Array<string | FetchRequest>;
+    originalRpc?: Array<string | ApiKeyRPC | FetchRequestRPC>; // Keep the original rpc (without API Keys filled) object from sourcify-chains.json
   };
 
 class CreatorTransactionMismatchError extends Error {
@@ -40,6 +43,7 @@ export default class SourcifyChain {
   title?: string | undefined;
   chainId: number;
   rpc: Array<string | FetchRequest>;
+  originalRpc?: Array<string | ApiKeyRPC | FetchRequestRPC>;
   supported: boolean;
   providers: JsonRpcProviderWithUrl[];
   fetchContractCreationTxUsing?: FetchContractCreationTxMethods;
@@ -53,6 +57,7 @@ export default class SourcifyChain {
     this.title = sourcifyChainObj.title;
     this.chainId = sourcifyChainObj.chainId;
     this.rpc = sourcifyChainObj.rpc;
+    this.originalRpc = sourcifyChainObj.originalRpc;
     this.supported = sourcifyChainObj.supported;
     this.providers = [];
     this.fetchContractCreationTxUsing =

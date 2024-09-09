@@ -3,8 +3,8 @@ import {
   SourcifyChainMap,
   SourcifyChainsExtensionsObject,
   Chain,
-  AlchemyInfuraRPC,
   FetchRequestRPC,
+  ApiKeyRPC,
 } from "@ethereum-sourcify/lib-sourcify";
 import { BadRequestError } from "./common/errors";
 import { FetchRequest } from "ethers";
@@ -69,25 +69,21 @@ const LOCAL_CHAINS: SourcifyChain[] = [
  * Function to take the rpc format in sourcify-chains.json and convert it to the format SourcifyChain expects.
  * SourcifyChain expects  url strings or ethers.js FetchRequest objects.
  */
-function buildCustomRpcs(
-  rpc: Array<string | AlchemyInfuraRPC | FetchRequestRPC>,
-) {
+function buildCustomRpcs(rpc: Array<string | ApiKeyRPC | FetchRequestRPC>) {
   return rpc.map((rpc) => {
     // simple url
     if (typeof rpc === "string") {
       return rpc;
     }
     // Fill in the api keys
-    else if (rpc.type === "Alchemy") {
-      return rpc.url.replace(
-        "{ALCHEMY_API_KEY}",
-        process.env[rpc.apiKeyEnvName] || process.env["ALCHEMY_API_KEY"] || "",
-      );
-    } else if (rpc.type === "Infura") {
-      return rpc.url.replace(
-        "{INFURA_API_KEY}",
-        process.env[rpc.apiKeyEnvName] || "",
-      );
+    else if (rpc.type === "ApiKey") {
+      const apiKeyValue = process.env[rpc.apiKeyEnvName];
+      if (!apiKeyValue) {
+        throw new Error(
+          `API key not found for ${rpc.apiKeyEnvName} in the rpc object ${JSON.stringify(rpc)}`,
+        );
+      }
+      return rpc.url.replace("{API_KEY}", apiKeyValue);
     }
     // Build ethers.js FetchRequest object for custom rpcs with auth headers
     else if (rpc.type === "FetchRequest") {
@@ -102,7 +98,7 @@ function buildCustomRpcs(
       }
       return ethersFetchReq;
     }
-    throw new Error(`Invalid rpc type: ${rpc.type}`);
+    throw new Error(`Invalid rpc object: ${JSON.stringify(rpc)}`);
   });
 }
 
@@ -142,6 +138,7 @@ for (const i in allChains) {
       rpc: sourcifyExtension.rpc
         ? buildCustomRpcs(sourcifyExtension.rpc)
         : chain.rpc, // avoid rpc ending up as undefined
+      originalRpc: sourcifyExtension.rpc || chain.rpc,
     });
     sourcifyChainsMap[chainId] = sourcifyChain;
   }

@@ -84,13 +84,13 @@ A full example of a chain entry is as follows:
         ]
       },
       {
-        "type": "Alchemy", // Alchemy RPCs
-        "url": "https://eth-mainnet.alchemyapi.io/v2/{ALCHEMY_API_KEY}",
+        "type": "ApiKey", // Private RPCs with API Keys
+        "url": "https://eth-mainnet.alchemyapi.io/v2/{API_KEY}",
         "apiKeyEnvName": "ALCHEMY_API_KEY"
       },
       {
-        "type": "Infura", // Infura RPCs
-        "url": "https://palm-mainnet.infura.io/v3/{INFURA_API_KEY}",
+        "type": "ApiKey",
+        "url": "https://palm-mainnet.infura.io/v3/{API_KEY}",
         "apiKeyEnvName": "INFURA_API_KEY"
       }
     ]

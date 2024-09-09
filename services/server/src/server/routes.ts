@@ -34,27 +34,19 @@ router.post("/change-log-level", (req, res) => {
 
 router.get("/chains", (_req, res) => {
   const sourcifyChains = sourcifyChainsArray.map(
-    ({ rpc, name, title, chainId, supported, etherscanApi }) => {
-      // Don't publish providers
-      // Don't show Alchemy & Infura IDs
-      rpc = rpc.map((url) => {
-        if (typeof url === "string") {
-          if (url.includes("alchemy"))
-            return url.replace(/\/[^/]*$/, "/{ALCHEMY_API_KEY}");
-          else if (url.includes("infura"))
-            return url.replace(/\/[^/]*$/, "/{INFURA_API_KEY}");
-          else return url;
-        } else {
-          // FetchRequest
-          return url.url;
-        }
-      });
-      return {
+    ({ originalRpc, name, title, chainId, supported, etherscanApi }) => {
+      const chainObj = {
         name,
         title,
         chainId,
-        rpc,
         supported,
+      };
+      if (!supported) {
+        return chainObj;
+      }
+      return {
+        ...chainObj,
+        rpc: originalRpc, // Don't publish `rpc` field to avoid leaking private RPCs
         etherscanAPI: etherscanApi?.apiURL, // Needed in the UI
       };
     },
