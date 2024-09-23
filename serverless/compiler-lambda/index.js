@@ -47,7 +47,7 @@ export async function fetchWithBackoff(resource, backoff = 10000, retries = 4) {
   throw new Error(`Failed fetching ${resource}`);
 }
 
-const HOST_SOLC_REPO = " https://binaries.soliditylang.org/";
+const HOST_SOLC_REPO = "https://binaries.soliditylang.org/";
 
 function findSolcPlatform() {
   if (process.platform === "darwin" && process.arch === "x64") {
